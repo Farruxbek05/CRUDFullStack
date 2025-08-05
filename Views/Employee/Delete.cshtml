@@ -1,0 +1,44 @@
+﻿@model CRUDdemo.Models.Employee
+@{
+    ViewData["Title"] = "Delete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Delete</h1>
+<h3>Employee Delete</h3>
+<div>
+    <h4> Employee Information </h4>
+    <hr />
+    <dl class="dl-horizantal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dt>
+            @Html.DisplayFor(model => model.Name)
+        </dt>
+        <dt>
+            @Html.DisplayNameFor(model => model.Gender)
+        </dt>
+        <dt>
+            @Html.DisplayFor(model => model.Gender)
+        </dt>
+        <dt>
+            @Html.DisplayNameFor(model => model.Company)
+        </dt>
+        <dt>
+            @Html.DisplayFor(model => model.Company)
+        </dt>
+        <dt>
+            @Html.DisplayNameFor(model => model.Department)
+        </dt>
+        <dt>
+            @Html.DisplayFor(model => model.Department)
+        </dt>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Delete" class="btn btn-danger" />
+        <a asp-action="Index">Back to List</a>
+    </form>
+</div>

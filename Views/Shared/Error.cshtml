@@ -1,0 +1,21 @@
+﻿@model Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature
+@{
+    ViewData["Title"] = "Error";
+    var exceptionDetails = Model?.Error;
+}
+
+<h1 class="text-danger">Xatolik yuz berdi.</h1>
+
+@if (exceptionDetails != null)
+{
+    <div>
+        <h4 class="text-warning">Xatolik ma'lumoti:</h4>
+        <p><strong>Xatolik xabari:</strong> @exceptionDetails.Message</p>
+        <p><strong>Stack Trace:</strong></p>
+        <pre>@exceptionDetails.StackTrace</pre>
+    </div>
+}
+else
+{
+    <p class="text-danger">Xatolik haqida ma'lumot topilmadi.</p>
+}

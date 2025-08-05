@@ -1,0 +1,89 @@
+﻿@model CRUDdemo.Models.Employee
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h2>Employee Details</h2>
+<div class="card">
+    <div class="card-header">
+        <h4>Employee Information</h4>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Name)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Gender)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Gender)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Company)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Company)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Department)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Department)</dd>
+
+            <dt class="col-sm-3">Marital Status</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsMarried)
+                {
+                    <span class="badge badge-success">Married</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">Single</span>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+
+@if (Model.IsMarried)
+{
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>Children Information</h4>
+            <a asp-controller="Child" asp-action="Create" asp-route-employeeId="@Model.Id" class="btn btn-success btn-sm">Add Child</a>
+        </div>
+        <div class="card-body">
+            @if (Model.Children.Any())
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Gender</th>
+                            <th>Age</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var child in Model.Children)
+                        {
+                            <tr>
+                                <td>@child.Name</td>
+                                <td>@child.Gender</td>
+                                <td>@child.Age years</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-controller="Child" asp-action="Edit" asp-route-id="@child.Id" class="btn btn-sm btn-warning">Edit</a>
+                                        <a asp-controller="Child" asp-action="Delete" asp-route-id="@child.Id" class="btn btn-sm btn-danger">Delete</a>
+                                        <a asp-controller="Child" asp-action="Details" asp-route-id="@child.Id" class="btn btn-sm btn-info">Details</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="text-muted">No children added yet.</p>
+            }
+        </div>
+    </div>
+}
+
+<div class="mt-4">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit Employee</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>

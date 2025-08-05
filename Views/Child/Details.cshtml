@@ -1,0 +1,33 @@
+﻿@model CRUDdemo.Models.Child
+@{
+    ViewData["Title"] = "Child Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var employee = ViewBag.Employee as CRUDdemo.Models.Employee;
+}
+
+<h2>Child Details</h2>
+
+<div class="card">
+    <div class="card-header">
+        <h4>Child Information</h4>
+        <p class="text-muted">Parent: @employee.Name (@employee.Company - @employee.Department)</p>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Name</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Gender</dt>
+            <dd class="col-sm-9">@Model.Gender</dd>
+
+            <dt class="col-sm-3">Age</dt>
+            <dd class="col-sm-9">@Model.Age years</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+    <a asp-action="Index" asp-route-employeeId="@Model.EmployeeId" class="btn btn-secondary">Back to Children List</a>
+    <a asp-controller="Employee" asp-action="Details" asp-route-id="@Model.EmployeeId" class="btn btn-outline-secondary">Back to Employee</a>
+</div>

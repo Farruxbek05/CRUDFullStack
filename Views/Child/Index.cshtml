@@ -1,0 +1,58 @@
+﻿@model IEnumerable<CRUDdemo.Models.Child>
+@{
+    ViewData["Title"] = "Children";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var employee = ViewBag.Employee as CRUDdemo.Models.Employee;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Children of @employee.Name</h1>
+        <p class="text-muted">@employee.Company - @employee.Department</p>
+    </div>
+    <a asp-action="Create" asp-route-employeeId="@ViewBag.EmployeeId" class="btn btn-success">Add New Child</a>
+</div>
+
+@if (Model.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Gender</th>
+                <th>Age</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var child in Model)
+            {
+                <tr>
+                    <td>@child.Name</td>
+                    <td>@child.Gender</td>
+                    <td>@child.Age years</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a asp-action="Edit" asp-route-id="@child.Id" class="btn btn-sm btn-warning">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@child.Id" class="btn btn-sm btn-danger">Delete</a>
+                            <a asp-action="Details" asp-route-id="@child.Id" class="btn btn-sm btn-info">Details</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">
+        <h4>No Children Added</h4>
+        <p>This employee doesn't have any children added yet.</p>
+        <a asp-action="Create" asp-route-employeeId="@ViewBag.EmployeeId" class="btn btn-success">Add First Child</a>
+    </div>
+}
+
+<div class="mt-4">
+    <a asp-controller="Employee" asp-action="Details" asp-route-id="@ViewBag.EmployeeId" class="btn btn-secondary">Back to Employee</a>
+    <a asp-controller="Employee" asp-action="Index" class="btn btn-outline-secondary">All Employees</a>
+</div>

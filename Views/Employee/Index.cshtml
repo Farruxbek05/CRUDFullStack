@@ -1,0 +1,66 @@
+﻿@model IEnumerable<CRUDdemo.Models.Employee>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1>Employee Management</h1>
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Employee</a>
+</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Name)</th>
+            <th>@Html.DisplayNameFor(model => model.Gender)</th>
+            <th>@Html.DisplayNameFor(model => model.Company)</th>
+            <th>@Html.DisplayNameFor(model => model.Department)</th>
+            <th>Marital Status</th>
+            <th>Children</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => emp.Name)</td>
+                <td>@Html.DisplayFor(modelItem => emp.Gender)</td>
+                <td>@Html.DisplayFor(modelItem => emp.Company)</td>
+                <td>@Html.DisplayFor(modelItem => emp.Department)</td>
+                <td>
+                    @if (emp.IsMarried)
+                    {
+                        <span class="badge badge-success">Married</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-secondary">Single</span>
+                    }
+                </td>
+                <td>
+                    @if (emp.IsMarried && emp.Children.Any())
+                    {
+                        <span class="badge badge-info">@emp.Children.Count Children</span>
+                        <a asp-controller="Child" asp-action="Index" asp-route-employeeId="@emp.Id" class="btn btn-sm btn-outline-primary">View Children</a>
+                    }
+                    else if (emp.IsMarried)
+                    {
+                        <span class="text-muted">No Children</span>
+                        <a asp-controller="Child" asp-action="Create" asp-route-employeeId="@emp.Id" class="btn btn-sm btn-success">Add Child</a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">N/A</span>
+                    }
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a asp-action="Edit" asp-route-id="@emp.Id" class="btn btn-sm btn-warning">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@emp.Id" class="btn btn-sm btn-danger">Delete</a>
+                        <a asp-action="Details" asp-route-id="@emp.Id" class="btn btn-sm btn-info">Details</a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
