@@ -32,10 +32,12 @@ namespace CRUDdemo.Controllers
                 _childDAL.AddChild(child);
                 return RedirectToAction("Index", new { employeeId = child.EmployeeId });
             }
+
             ViewBag.EmployeeId = child.EmployeeId;
             ViewBag.Employee = _employeeDAL.GetEmployeeById(child.EmployeeId);
             return View(child);
         }
+
 
         public IActionResult Edit(int id)
         {

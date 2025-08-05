@@ -30,28 +30,30 @@
                 <td>
                     @if (emp.IsMarried)
                     {
-                        <span class="badge badge-success">Married</span>
+                        <span class="badge badge-success" style="color: black;">Married</span>
                     }
                     else
                     {
                         <span class="badge badge-secondary">Single</span>
                     }
+
                 </td>
                 <td>
                     @if (emp.IsMarried && emp.Children.Any())
                     {
-                        <span class="badge badge-info">@emp.Children.Count Children</span>
-                        <a asp-controller="Child" asp-action="Index" asp-route-employeeId="@emp.Id" class="btn btn-sm btn-outline-primary">View Children</a>
+                        <span class="badge bg-primary text-white">@emp.Children.Count @((emp.Children.Count == 1) ? "Child" : "Children")</span>
+                        <a asp-controller="Child" asp-action="Index" asp-route-employeeId="@emp.Id" class="btn btn-sm btn-outline-primary ms-2">View Children</a>
                     }
                     else if (emp.IsMarried)
                     {
                         <span class="text-muted">No Children</span>
-                        <a asp-controller="Child" asp-action="Create" asp-route-employeeId="@emp.Id" class="btn btn-sm btn-success">Add Child</a>
+                        <a asp-controller="Child" asp-action="Create" asp-route-employeeId="@emp.Id" class="btn btn-sm btn-success ms-2">Add Child</a>
                     }
                     else
                     {
                         <span class="text-muted">N/A</span>
                     }
+
                 </td>
                 <td>
                     <div class="btn-group" role="group">

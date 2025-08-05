@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.ComponentModel.DataAnnotations;
 
 namespace CRUDdemo.Models
 {
@@ -20,7 +21,5 @@ namespace CRUDdemo.Models
         [Required]
         [StringLength(10)]
         public string Gender { get; set; }
-
-        public Employee Employee { get; set; }
     }
 }
