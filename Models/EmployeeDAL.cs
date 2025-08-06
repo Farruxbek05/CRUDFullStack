@@ -46,6 +46,65 @@ namespace CRUDdemo.Models
 
         public void AddEmployee(Employee employee)
         {
+            int employeeId = 0;
+
+            using (NpgsqlConnection con = new NpgsqlConnection(_connectionString))
+            {
+                con.Open();
+                using (var transaction = con.BeginTransaction())
+                {
+                    try
+                    {
+                        using (NpgsqlCommand cmd = new NpgsqlCommand("sp_insertemployee_returnid", con, transaction))
+                        {
+                            cmd.CommandType = CommandType.StoredProcedure;
+
+                            cmd.Parameters.AddWithValue("p_name", employee.Name);
+                            cmd.Parameters.AddWithValue("p_gender", employee.Gender);
+                            cmd.Parameters.AddWithValue("p_company", employee.Company);
+                            cmd.Parameters.AddWithValue("p_department", employee.Department);
+                            cmd.Parameters.AddWithValue("p_ismarried", employee.IsMarried);
+
+                            var result = cmd.ExecuteScalar();
+                            employeeId = Convert.ToInt32(result);
+                        }
+
+                        if (employee.IsMarried && employee.Children != null && employee.Children.Any())
+                        {
+                            foreach (var child in employee.Children)
+                            {
+                                if (!string.IsNullOrWhiteSpace(child.Name) &&
+                                    !string.IsNullOrWhiteSpace(child.Gender) &&
+                                    child.Age > 0)
+                                {
+                                    using (NpgsqlCommand childCmd = new NpgsqlCommand("sp_insertchild", con, transaction))
+                                    {
+                                        childCmd.CommandType = CommandType.StoredProcedure;
+
+                                        childCmd.Parameters.AddWithValue("p_employee_id", employeeId);
+                                        childCmd.Parameters.AddWithValue("p_name", child.Name);
+                                        childCmd.Parameters.AddWithValue("p_age", child.Age);
+                                        childCmd.Parameters.AddWithValue("p_gender", child.Gender);
+
+                                        childCmd.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public void AddEmployeeWithChildren(Employee employee)
+        {
             using (NpgsqlConnection con = new NpgsqlConnection(_connectionString))
             {
                 using (NpgsqlCommand cmd = new NpgsqlCommand("sp_insertemployee", con))
@@ -62,6 +121,40 @@ namespace CRUDdemo.Models
                     cmd.ExecuteNonQuery();
                 }
             }
+
+            int employeeId = GetLastInsertedEmployeeId();
+
+            if (employee.IsMarried && employee.Children != null && employee.Children.Any())
+            {
+                foreach (var child in employee.Children)
+                {
+                    if (!string.IsNullOrWhiteSpace(child.Name) &&
+                        !string.IsNullOrWhiteSpace(child.Gender) &&
+                        child.Age > 0)
+                    {
+                        child.EmployeeId = employeeId;
+                        _childDAL.AddChild(child);
+                    }
+                }
+            }
+        }
+
+        private int GetLastInsertedEmployeeId()
+        {
+            int employeeId = 0;
+            using (NpgsqlConnection con = new NpgsqlConnection(_connectionString))
+            {
+                string query = "SELECT MAX(id) FROM employee";
+                NpgsqlCommand cmd = new NpgsqlCommand(query, con);
+
+                con.Open();
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    employeeId = Convert.ToInt32(result);
+                }
+            }
+            return employeeId;
         }
 
         public void UpdateEmployee(Employee employee)

@@ -3,19 +3,22 @@
     ViewData["Title"] = "Create";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <h1>Create</h1>
 <h3>Employee Entry</h3>
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post" id="employeeForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="Gender" class="control-label"></label>
                 <select asp-for="Gender" class="form-control">
                     <option value="">==Select Gender==</option>
@@ -24,17 +27,20 @@
                 </select>
                 <span asp-validation-for="Gender" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="Company" class="control-label"></label>
                 <input asp-for="Company" class="form-control" />
                 <span asp-validation-for="Company" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="Department" class="control-label"></label>
                 <input asp-for="Department" class="form-control" />
                 <span asp-validation-for="Department" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <div class="form-check">
                     <input asp-for="IsMarried" class="form-check-input" type="checkbox" id="isMarriedCheck" />
                     <label asp-for="IsMarried" class="form-check-label" for="isMarriedCheck">
@@ -43,17 +49,159 @@
                 </div>
                 <span asp-validation-for="IsMarried" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+         
+            <div id="childrenSection" class="children-section" style="display: none;">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Children Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="childrenContainer">
+                          
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="addChild()">
+                            Add Child
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-4">
                 <input type="submit" value="Create" class="btn btn-success" />
+                <button type="button" class="btn btn-secondary ms-2" onclick="resetForm()">Clear Form</button>
             </div>
         </form>
     </div>
 </div>
-<div>
+
+<div class="mt-3">
     <a asp-action="Index">Back to List</a>
 </div>
+
+<style>
+    .children-section {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .child-entry {
+        background: white;
+        padding: 15px;
+        margin-bottom: 10px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+    }
+
+        .child-entry h6 {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+    .child-row {
+        display: flex;
+        gap: 10px;
+        align-items: end;
+    }
+
+        .child-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+            .child-row .form-group label {
+                font-size: 0.9rem;
+                margin-bottom: 5px;
+            }
+
+            .child-row .form-group input,
+            .child-row .form-group select {
+                padding: 8px;
+                font-size: 0.9rem;
+            }
+</style>
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        let childCounter = 0;
+
+        document.getElementById('isMarriedCheck').addEventListener('change', function() {
+            const childrenSection = document.getElementById('childrenSection');
+            if (this.checked) {
+                childrenSection.style.display = 'block';
+                if (childCounter === 0) {
+                    addChild(); 
+                }
+            } else {
+                childrenSection.style.display = 'none';
+                document.getElementById('childrenContainer').innerHTML = '';
+                childCounter = 0;
+            }
+        });
+
+        function addChild() {
+            childCounter++;
+            const childrenContainer = document.getElementById('childrenContainer');
+
+            const childEntry = document.createElement('div');
+            childEntry.className = 'child-entry';
+            childEntry.innerHTML = `
+                <h6>Child ${childCounter}</h6>
+                <div class="child-row">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" name="Children[${childCounter-1}].Name" class="form-control form-control-sm" placeholder="Child's name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select name="Children[${childCounter-1}].Gender" class="form-control form-control-sm">
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" name="Children[${childCounter-1}].Age" class="form-control form-control-sm" min="0" max="30" placeholder="Age" />
+                    </div>
+                </div>
+            `;
+
+            childrenContainer.appendChild(childEntry);
+        }
+
+        function removeChild(button) {
+            button.closest('.child-entry').remove();
+
+            const remainingChildren = document.querySelectorAll('.child-entry');
+            if (remainingChildren.length == 0) {
+                childCounter = 0;
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('employeeForm').reset();
+            document.getElementById('childrenSection').style.display = 'none';
+            document.getElementById('childrenContainer').innerHTML = '';
+            childCounter = 0;
+        }
+
+        document.getElementById('employeeForm').addEventListener('submit', function() {
+            const submitBtn = this.querySelector('input[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.value = 'Creating...';
+
+            setTimeout(function() {
+                submitBtn.disabled = false;
+                submitBtn.value = 'Create';
+            }, 5000);
+        });
+    </script>
 }

@@ -1,103 +1,165 @@
 ﻿using CRUDdemo.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CRUDdemo.Controllers;
-[Route("[controller]/[action]")]
-public class EmployeeController : Controller
+namespace CRUDdemo.Controllers
 {
-    EmployeeDAL employeeDAL = new EmployeeDAL();
-    public IActionResult Index()
+    public class EmployeeController : Controller
     {
-        List<Employee> employees = new List<Employee>();
-        employees = employeeDAL.GetAllEmployee().ToList();
-        return View(employees);
+        private readonly EmployeeDAL _employeeDAL;
 
-    }
-    [HttpGet]
-    public IActionResult Create()
-    {
-        return View();
-    }
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult Create([Bind] Employee employee)
-    {
-        if (ModelState.IsValid)
+        public EmployeeController()
         {
-            employeeDAL.AddEmployee(employee);
-            return RedirectToAction("Index");
-        }
-        return View(employee);
-    }
-
-    [HttpGet]
-    public IActionResult Edit(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound();
+            _employeeDAL = new EmployeeDAL();
         }
 
-        Employee employee = employeeDAL.GetEmployeeById(id);
-        if (employee == null)
+        public IActionResult Index()
         {
-            return NotFound();
+            var employees = _employeeDAL.GetAllEmployee();
+            return View(employees);
         }
 
-        return View(employee);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult Edit(int id, [Bind] Employee employee)
-    {
-        if (id != employee.Id)
+        public IActionResult Details(int id)
         {
-            return NotFound();
+            var employee = _employeeDAL.GetEmployeeById(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            return View(employee);
         }
 
-        if (ModelState.IsValid)
+        public IActionResult Create()
         {
-            employeeDAL.UpdateEmployee(employee);
-            return RedirectToAction("Index");
+            var model = new Employee();
+            model.Children = new List<Child>();
+            return View(model);
         }
 
-        return View(employee); 
-    }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Employee employee)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (employee.IsMarried && employee.Children != null && employee.Children.Any())
+                    {
+                        _employeeDAL.AddEmployeeWithChildren(employee);
+                    }
+                    else
+                    {
+                        _employeeDAL.AddEmployee(employee);
+                    }
 
-    [HttpGet]
-    public IActionResult Details(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound();
-        }
-        Employee emp = employeeDAL.GetEmployeeById(id);
-        if (emp == null)
-        {
-            return NotFound();
-        }
-        return View(emp);
-    }
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Xatolik: " + ex.Message);
+                ModelState.AddModelError("", "Xatolik yuz berdi: " + ex.Message);
+            }
 
-    public IActionResult Delete(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound();
+            if (employee.Children == null)
+                employee.Children = new List<Child>();
+
+            return View(employee);
         }
-        Employee emp = employeeDAL.GetEmployeeById(id);
-        if (emp == null)
+
+
+        public IActionResult Edit(int id)
         {
-            return NotFound();
+            var employee = _employeeDAL.GetEmployeeById(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            return View(employee);
         }
-        return View(emp);
-    }
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public IActionResult DeleteEmp(int? id)
-    {
-        employeeDAL.DeleteEmployee(id);
-        return RedirectToAction("Index");
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(int id, Employee employee)
+        {
+            if (id != employee.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _employeeDAL.UpdateEmployee(employee);
+                    TempData["SuccessMessage"] = "Employee updated successfully!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "An error occurred while updating the employee: " + ex.Message);
+                }
+            }
+            return View(employee);
+        }
+
+        public IActionResult Delete(int id)
+        {
+            var employee = _employeeDAL.GetEmployeeById(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            return View(employee);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            try
+            {
+                _employeeDAL.DeleteEmployee(id);
+                TempData["SuccessMessage"] = "Employee deleted successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred while deleting the employee: " + ex.Message;
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public JsonResult ValidateEmployee(Employee employee)
+        {
+            var isValid = true;
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(employee.Name))
+            {
+                isValid = false;
+                errors.Add("Name is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(employee.Gender))
+            {
+                isValid = false;
+                errors.Add("Gender is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(employee.Company))
+            {
+                isValid = false;
+                errors.Add("Company is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(employee.Department))
+            {
+                isValid = false;
+                errors.Add("Department is required");
+            }
+
+            return Json(new { isValid = isValid, errors = errors });
+        }
     }
 }
