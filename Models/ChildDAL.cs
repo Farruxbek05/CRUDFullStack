@@ -102,16 +102,17 @@ namespace CRUDdemo.Models
                 {
                     if (reader.Read())
                     {
-                        child.Id = Convert.ToInt32(reader["Id"]);
-                        child.EmployeeId = Convert.ToInt32(reader["EmployeeId"]);
-                        child.Name = reader["Name"].ToString();
-                        child.Age = Convert.ToInt32(reader["Age"]);
-                        child.Gender = reader["Gender"].ToString();
+                        child.Id = Convert.ToInt32(reader["id"]);
+                        child.EmployeeId = Convert.ToInt32(reader["employee_id"]);
+                        child.Name = reader["name"].ToString();
+                        child.Age = Convert.ToInt32(reader["age"]);
+                        child.Gender = reader["gender"].ToString();
                     }
                 }
             }
 
             return child;
         }
+
     }
 }

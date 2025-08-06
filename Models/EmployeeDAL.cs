@@ -69,6 +69,7 @@ namespace CRUDdemo.Models
                             employeeId = Convert.ToInt32(result);
                         }
 
+
                         if (employee.IsMarried && employee.Children != null && employee.Children.Any())
                         {
                             foreach (var child in employee.Children)
@@ -107,37 +108,62 @@ namespace CRUDdemo.Models
         {
             using (NpgsqlConnection con = new NpgsqlConnection(_connectionString))
             {
-                using (NpgsqlCommand cmd = new NpgsqlCommand("sp_insertemployee", con))
+                con.Open();
+                using (var transaction = con.BeginTransaction())
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("p_name", employee.Name);
-                    cmd.Parameters.AddWithValue("p_gender", employee.Gender);
-                    cmd.Parameters.AddWithValue("p_company", employee.Company);
-                    cmd.Parameters.AddWithValue("p_department", employee.Department);
-                    cmd.Parameters.AddWithValue("p_ismarried", employee.IsMarried);
-
-                    con.Open();
-                    cmd.ExecuteNonQuery();
-                }
-            }
-
-            int employeeId = GetLastInsertedEmployeeId();
-
-            if (employee.IsMarried && employee.Children != null && employee.Children.Any())
-            {
-                foreach (var child in employee.Children)
-                {
-                    if (!string.IsNullOrWhiteSpace(child.Name) &&
-                        !string.IsNullOrWhiteSpace(child.Gender) &&
-                        child.Age > 0)
+                    try
                     {
-                        child.EmployeeId = employeeId;
-                        _childDAL.AddChild(child);
+                        int employeeId;
+
+                        using (NpgsqlCommand cmd = new NpgsqlCommand("SELECT sp_insertemployee_returnid(@p_name, @p_gender, @p_company, @p_department, @p_ismarried)", con, transaction))
+                        {
+                            cmd.CommandType = CommandType.Text;
+
+                            cmd.Parameters.AddWithValue("p_name", employee.Name);
+                            cmd.Parameters.AddWithValue("p_gender", employee.Gender);
+                            cmd.Parameters.AddWithValue("p_company", employee.Company);
+                            cmd.Parameters.AddWithValue("p_department", employee.Department);
+                            cmd.Parameters.AddWithValue("p_ismarried", employee.IsMarried);
+
+                            var result = cmd.ExecuteScalar();
+                            employeeId = Convert.ToInt32(result);
+                        }
+
+
+                        if (employee.IsMarried && employee.Children != null && employee.Children.Any())
+                        {
+                            foreach (var child in employee.Children)
+                            {
+                                if (!string.IsNullOrWhiteSpace(child.Name) &&
+                                    !string.IsNullOrWhiteSpace(child.Gender) &&
+                                    child.Age > 0)
+                                {
+                                    using (NpgsqlCommand childCmd = new NpgsqlCommand("sp_insertchild", con, transaction))
+                                    {
+                                        childCmd.CommandType = CommandType.StoredProcedure;
+
+                                        childCmd.Parameters.AddWithValue("p_employee_id", employeeId);
+                                        childCmd.Parameters.AddWithValue("p_name", child.Name);
+                                        childCmd.Parameters.AddWithValue("p_age", child.Age);
+                                        childCmd.Parameters.AddWithValue("p_gender", child.Gender);
+
+                                        childCmd.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        throw;
                     }
                 }
             }
         }
+
 
         private int GetLastInsertedEmployeeId()
         {
