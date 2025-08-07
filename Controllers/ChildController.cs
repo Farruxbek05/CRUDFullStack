@@ -29,8 +29,16 @@ namespace CRUDdemo.Controllers
         {
             if (ModelState.IsValid)
             {
-                _childDAL.AddChild(child);
-                return RedirectToAction("Index", new { employeeId = child.EmployeeId });
+                try
+                {
+                    _childDAL.AddChild(child);
+                    TempData["SuccessMessage"] = $"Child '{child.Name}' added successfully!";
+                    return RedirectToAction("Index", new { employeeId = child.EmployeeId });
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = "Error adding child: " + ex.Message;
+                }
             }
 
             ViewBag.EmployeeId = child.EmployeeId;
@@ -38,10 +46,15 @@ namespace CRUDdemo.Controllers
             return View(child);
         }
 
-
         public IActionResult Edit(int id)
         {
             var child = _childDAL.GetChildById(id);
+            if (child == null)
+            {
+                TempData["ErrorMessage"] = "Child not found!";
+                return RedirectToAction("Index");
+            }
+
             ViewBag.Employee = _employeeDAL.GetEmployeeById(child.EmployeeId);
             return View(child);
         }
@@ -52,9 +65,18 @@ namespace CRUDdemo.Controllers
         {
             if (ModelState.IsValid)
             {
-                _childDAL.UpdateChild(child);
-                return RedirectToAction("Index", new { employeeId = child.EmployeeId });
+                try
+                {
+                    _childDAL.UpdateChild(child);
+                    TempData["SuccessMessage"] = $"Child '{child.Name}' updated successfully!";
+                    return RedirectToAction("Index", new { employeeId = child.EmployeeId });
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = "Error updating child: " + ex.Message;
+                }
             }
+
             ViewBag.Employee = _employeeDAL.GetEmployeeById(child.EmployeeId);
             return View(child);
         }
@@ -70,15 +92,39 @@ namespace CRUDdemo.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var child = _childDAL.GetChildById(id);
-            int employeeId = child.EmployeeId;
-            _childDAL.DeleteChild(id);
-            return RedirectToAction("Index", new { employeeId = employeeId });
+            try
+            {
+                var child = _childDAL.GetChildById(id);
+                if (child == null)
+                {
+                    TempData["ErrorMessage"] = "Child not found!";
+                    return RedirectToAction("Index");
+                }
+
+                int employeeId = child.EmployeeId;
+                string childName = child.Name;
+
+                _childDAL.DeleteChild(id);
+                TempData["SuccessMessage"] = $"Child '{childName}' deleted successfully!";
+
+                return RedirectToAction("Index", new { employeeId = employeeId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error deleting child: " + ex.Message;
+                return RedirectToAction("Index");
+            }
         }
 
         public IActionResult Details(int id)
         {
             var child = _childDAL.GetChildById(id);
+            if (child == null)
+            {
+                TempData["ErrorMessage"] = "Child not found!";
+                return RedirectToAction("Index");
+            }
+
             ViewBag.Employee = _employeeDAL.GetEmployeeById(child.EmployeeId);
             return View(child);
         }

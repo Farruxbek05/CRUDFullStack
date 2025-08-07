@@ -55,9 +55,9 @@ namespace CRUDdemo.Models
                 {
                     try
                     {
-                        using (NpgsqlCommand cmd = new NpgsqlCommand("sp_insertemployee_returnid", con, transaction))
+                        using (NpgsqlCommand cmd = new NpgsqlCommand("SELECT sp_insertemployee_returnid(@p_name, @p_gender, @p_company, @p_department, @p_ismarried)", con, transaction))
                         {
-                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.CommandType = CommandType.Text;
 
                             cmd.Parameters.AddWithValue("p_name", employee.Name);
                             cmd.Parameters.AddWithValue("p_gender", employee.Gender);
@@ -164,24 +164,6 @@ namespace CRUDdemo.Models
             }
         }
 
-
-        private int GetLastInsertedEmployeeId()
-        {
-            int employeeId = 0;
-            using (NpgsqlConnection con = new NpgsqlConnection(_connectionString))
-            {
-                string query = "SELECT MAX(id) FROM employee";
-                NpgsqlCommand cmd = new NpgsqlCommand(query, con);
-
-                con.Open();
-                var result = cmd.ExecuteScalar();
-                if (result != null && result != DBNull.Value)
-                {
-                    employeeId = Convert.ToInt32(result);
-                }
-            }
-            return employeeId;
-        }
 
         public void UpdateEmployee(Employee employee)
         {

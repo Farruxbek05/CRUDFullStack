@@ -10,49 +10,179 @@
         <h1>Children of @employee.Name</h1>
         <p class="text-muted">@employee.Company - @employee.Department</p>
     </div>
-    <a asp-action="Create" asp-route-employeeId="@ViewBag.EmployeeId" class="btn btn-success">Add New Child</a>
+    <a asp-action="Create" asp-route-employeeId="@ViewBag.EmployeeId" class="btn btn-success">
+        <i class="fas fa-plus"></i> Add New Child
+    </a>
 </div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
 @if (Model.Any())
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Gender</th>
-                <th>Age</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var child in Model)
-            {
-                <tr>
-                    <td>@child.Name</td>
-                    <td>@child.Gender</td>
-                    <td>@child.Age years</td>
-                    <td>
-                        <div class="btn-group" role="group">
-                            <a asp-action="Edit" asp-route-id="@child.Id" class="btn btn-sm btn-warning">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@child.Id" class="btn btn-sm btn-danger">Delete</a>
-                            <a asp-action="Details" asp-route-id="@child.Id" class="btn btn-sm btn-info">Details</a>
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-child"></i> Children List
+                <span class="badge bg-primary">@Model.Count() @(Model.Count() == 1 ? "Child" : "Children")</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th><i class="fas fa-user"></i> Name</th>
+                            <th><i class="fas fa-venus-mars"></i> Gender</th>
+                            <th><i class="fas fa-birthday-cake"></i> Age</th>
+                            <th><i class="fas fa-cogs"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var child in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@child.Name</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-@(child.Gender?.ToLower() == "male" ? "primary" : "pink") text-white">
+                                        <i class="fas fa-@(child.Gender?.ToLower() == "male" ? "mars" : "venus")"></i>
+                                        @child.Gender
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info text-white">
+                                        @child.Age @(child.Age == 1 ? "year" : "years")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@child.Id"
+                                           class="btn btn-sm btn-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@child.Id"
+                                           class="btn btn-sm btn-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-danger"
+                                                title="Delete"
+                                                onclick="confirmDelete(@child.Id, '@child.Name')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 }
 else
 {
-    <div class="alert alert-info">
-        <h4>No Children Added</h4>
-        <p>This employee doesn't have any children added yet.</p>
-        <a asp-action="Create" asp-route-employeeId="@ViewBag.EmployeeId" class="btn btn-success">Add First Child</a>
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-child fa-4x text-muted mb-4"></i>
+            <h4 class="text-muted">No Children Added</h4>
+            <p class="text-muted mb-4">@employee.Name doesn't have any children added yet.</p>
+            <a asp-action="Create" asp-route-employeeId="@ViewBag.EmployeeId" class="btn btn-success">
+                <i class="fas fa-plus"></i> Add First Child
+            </a>
+        </div>
     </div>
 }
 
 <div class="mt-4">
-    <a asp-controller="Employee" asp-action="Details" asp-route-id="@ViewBag.EmployeeId" class="btn btn-secondary">Back to Employee</a>
-    <a asp-controller="Employee" asp-action="Index" class="btn btn-outline-secondary">All Employees</a>
+    <a asp-controller="Employee" asp-action="Details" asp-route-id="@ViewBag.EmployeeId" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Employee
+    </a>
+    <a asp-controller="Employee" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-users"></i> All Employees
+    </a>
 </div>
+
+<form id="deleteForm" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="childIdInput" name="id" />
+</form>
+
+<script>
+    function confirmDelete(childId, childName) {
+        var message = `Are you sure you want to delete "${childName}"?`;
+
+        if (confirm(message)) {
+            document.getElementById('childIdInput').value = childId;
+
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Child")';
+
+            document.getElementById('deleteForm').submit();
+        }
+    }
+
+    function confirmDeleteEnhanced(childId, childName) {
+        var message = `⚠️ DELETE CONFIRMATION ⚠️\n\n` +
+                      `Child Name: ${childName}\n\n` +
+                      `This action cannot be undone!\n\n` +
+                      `Click OK to proceed or Cancel to abort.`;
+
+        if (confirm(message)) {
+            document.getElementById('childIdInput').value = childId;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Child")';
+            document.getElementById('deleteForm').submit();
+        }
+    }
+</script>
+
+<style>
+    .bg-pink {
+        background-color: #e91e63 !important;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    .table th {
+        border-top: none;
+        font-weight: 600;
+    }
+
+    .btn-group .btn {
+        margin-right: 2px;
+    }
+
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
