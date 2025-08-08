@@ -29,6 +29,10 @@
                     <a asp-action="Create" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Create New Employee
                     </a>
+
+                    <button type="button" class="btn btn-info ms-2" data-bs-toggle="modal" data-bs-target="#importModal">
+                        <i class="fas fa-upload"></i> Import Excel
+                    </button>
                 </div>
                 <div class="col-md-6 text-end">
                     <div class="btn-group" role="group">
@@ -191,6 +195,33 @@
                     }
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Excel Import</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="ImportFromExcel" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Excel faylni tanlang:</label>
+                        <input type="file" name="file" id="file" class="form-control" accept=".xlsx,.xls" required />
+                        <div class="form-text">Faqat .xlsx va .xls formatdagi fayllar qabul qilinadi.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Import
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
